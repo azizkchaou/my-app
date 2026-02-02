@@ -1,5 +1,17 @@
+import { SignedIn } from "@clerk/nextjs";
+import { SignedOut } from "@clerk/nextjs";
+import { SignInButton } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
+
 const Header = () => {
-    return <div>Header</div>;
+    return <div className="fixed top-0"> 
+        <SignedOut>
+            <SignInButton />
+        </SignedOut>
+        <SignedIn>
+            <UserButton />
+        </SignedIn>
+            </div>;
 };
 
 export default Header;
