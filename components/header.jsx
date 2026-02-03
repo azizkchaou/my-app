@@ -5,9 +5,11 @@ import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import { LayoutDashboard } from "lucide-react";
 import { PenBox } from "lucide-react";
+import { checkUser } from "@/lib/checkUser";
 
 const Header = async () => {
-  //await checkUser();
+  await checkUser();
+
 
   return (
     <header className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b">
