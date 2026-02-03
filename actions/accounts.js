@@ -43,4 +43,30 @@ export async function updateDefaultAccount(accountId) {
         throw error;
     }
 }
-    
+
+export async function getAccountWithTransactions(accountId) {
+    const { userId } = await auth();
+
+    if (!userId) throw new Error("User is not authorized ");
+    const user = await db.user.findUnique({
+        where: { clerkUserId: userId },
+    });
+    if (!user) throw new Error("User not found in database");
+    const account = await db.account.findUnique({
+        where: { id: accountId, userId: user.id },
+        include: {
+            transactions: {
+                orderBy: { createdAt: "desc" },
+            },
+            _count : {
+                select : {
+                    transactions : true ,
+                }
+            }
+        },
+    })
+    if (!account) throw new Error("Account not found")  ;
+    return {...serializeTransaction(account) ,
+        transactions : account.transactions.map(serializeTransaction)   
+     };
+}
