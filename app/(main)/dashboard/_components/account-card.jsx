@@ -1,5 +1,6 @@
+"use client";
 import { Card } from '@/components/ui/card';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { CardContent } from '@/components/ui/card';
 import { CardHeader } from '@/components/ui/card';
 import { CardTitle } from '@/components/ui/card';
@@ -8,17 +9,42 @@ import { Switch } from '@/components/ui/switch';
 import { parse } from 'date-fns';   
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import Link from 'next/link';
-
+import useFetch from '@/hooks/use-fetch';
+import { updateDefaultAccount } from '@/actions/accounts';
+import { toast } from 'sonner';
 
 const AccountCard = ({account}) => {
     const {name , type , balance , id , isDefault} = account ;
+
+    const {
+        loading :  updateDefaultLoading , fn : updateDefaultFn , data: updatedAccount , error
+    } = useFetch(updateDefaultAccount) ;
+    
+    const handleDefaultChange = async (e) => {
+        if(isDefault) {
+            toast.warning("you need at least one default account") ;
+            return ;
+        };
+        await updateDefaultFn(id) ;
+    }
+    useEffect(() => {
+        if (updatedAccount?.success ) {
+            toast.success("Default account updated successfully") ;
+        }
+    }, [updatedAccount , updateDefaultLoading]) ; 
+    
+    useEffect(() => {
+        if (error) {
+            toast.error("Failed to update default account: " + error.message) ;
+        }   
+    }, [error]) ;
 
     return (
         <Card className="hover:shadow-md transition-shadow group relative">
             <Link href={`/account/${id}`}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2" >
                     <CardTitle className="text-sm font-medium capitalize">{name}</CardTitle>
-                    <Switch checked={isDefault} />
+                    <Switch checked={isDefault} onCheckedChange={handleDefaultChange} disabled={updateDefaultLoading} />
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">
