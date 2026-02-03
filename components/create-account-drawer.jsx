@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from "react";
+import React, { useState , useEffect, use } from "react";
 import { createAccount } from "@/actions/dashboard";
 import {
     Drawer,
@@ -17,7 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
-
+import useFetch from "@/hooks/use-fetch";
+import { toast } from "sonner";
 
 
 
@@ -33,8 +34,25 @@ const CreateAccountDrawer = ({children}) => {
             isDefault : false ,
         }   
     });
+
+    const {data : newAccount  , error , fn : createAccountFn , loading : createAccountLoading } = useFetch(createAccount)
+    
+    useEffect(() => {
+        if (newAccount && !createAccountLoading) {
+            toast.success("Account created successfully") ;
+            setOpen(false) ;
+            reset() ;
+        }
+    }, [newAccount, createAccountLoading]) ;
+
+    useEffect(() => {
+        if (error) {
+            toast.error("Failed to create account: " + error.message) ;
+        }
+    }, [error]) ;
+
     const onSubmit = async (data) => {
-        console.log(data);
+        await createAccountFn(data);
     };
 
     return( 
@@ -92,7 +110,7 @@ const CreateAccountDrawer = ({children}) => {
                                 type="number"
                                 step="0.01"
                                 placeholder="0.00"
-                                {...register("balance")}
+                                {...register("balance", { valueAsNumber: true })}
                             />
                             {errors.balance && (
                                 <p className="text-sm text-red-500">{errors.balance.message}</p>
@@ -126,9 +144,17 @@ const CreateAccountDrawer = ({children}) => {
                             <Button
                                 type="submit"
                                 className="flex-1"
-                                
+                                disabled={createAccountLoading}
                             >
-                                Create Account
+                                {createAccountLoading ? (
+                                    <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Creating
+                                    </>
+                                ) :  (
+                                    "Create Account"
+                                )}  
+                                
                             </Button>
                         </div>
                         

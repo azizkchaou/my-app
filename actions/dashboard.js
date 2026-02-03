@@ -22,7 +22,7 @@ export async function createAccount(data) {
         if (!user) throw new Error("User not found in database");
         
         // parse balance to float
-        const balanceFloat = parseFloat(data.get("balance"));
+        const balanceFloat = parseFloat(data.balance);
         if (isNaN(balanceFloat)) {
             throw new Error("Invalid balance value");
         }
@@ -34,7 +34,7 @@ export async function createAccount(data) {
         });
 
         //checking if the account 
-       const shouldBeDefault = existingAccount.length === 0 ? true : data.get("isDefault") ;
+       const shouldBeDefault = existingAccount.length === 0 ? true : data.isDefault ;
 
        if (shouldBeDefault) {
             // if the new account is set to default, unset previous default accounts
@@ -49,10 +49,10 @@ export async function createAccount(data) {
         const newAccount = await db.account.create({
             data: {
                 ...data,
-                name: data.get("name"),
-                type: data.get("type"),
+                name: data.name,
+                type: data.type,
                 balance: balanceFloat,
-                currency: data.get("currency"),
+                currency: data.currency,
                 userId: user.id,
                 isDefault : shouldBeDefault,
             },
