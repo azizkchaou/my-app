@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
@@ -19,7 +19,10 @@ import { se } from 'date-fns/locale';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash } from 'lucide-react';
+import { Trash, ChevronLeft, ChevronRight } from 'lucide-react';
+import { bulkDeleteTransactions } from '@/actions/accounts';
+import { toast } from 'sonner';
+import { BarLoader } from 'react-spinners';
 
 
 const RECURRING_INTERVALS = {
@@ -37,7 +40,29 @@ const TransactionsTable = ({transactions}) => {
     
     const [searchTerm,  setSearchTerm ] = useState("") ;
     const [typeFilter , setTypeFilter] = useState("");
-    const [recurringFilter , setRecurringFilter] = useState("")
+    const [recurringFilter , setRecurringFilter] = useState("") ;
+    const [currentPage, setCurrentPage] = useState(1) ;
+    const itemsPerPage = 10 ;
+
+    const {
+        loading : deleteLoading , fn : deleteFn , data: deleted
+    } = useFetch(bulkDeleteTransactions);
+
+    const handleBulkDelete = () => {
+        if(!window.confirm(`Are you sure you want to delete ${selectIds.length} transactions? This action cannot be undone.`)) {
+            return ;
+        }
+        deleteFn(selectIds) ;
+        setSelectIds([]) ;
+
+    };
+
+    useEffect(() => {
+        if (deleted && !deleteLoading) {
+            toast.success("Transactions deleted successfully") ;
+            router.refresh() ;
+        }
+    }, [deleted, deleteLoading, router]);
 
     const handleSort = (field) => {
         setSortConfig((current) => ({
@@ -65,15 +90,14 @@ const TransactionsTable = ({transactions}) => {
         }   
     };
 
-    const handleBulkDelete = () => {
-        deleteFn(selectIds) ;
-    };
+    
 
     const handleClearFilters = () => {
         setSearchTerm("") ;
         setTypeFilter("") ;
         setRecurringFilter("") ;
         setSelectIds([]) ;
+        setCurrentPage(1) ;
     }
     
     const filteredAndSortedTransactions = useMemo(() => {
@@ -89,7 +113,7 @@ const TransactionsTable = ({transactions}) => {
         // recurring filter
         if (recurringFilter) {
             result = result.filter((transaction) => 
-                recurringFilter === "RECURRING" ? transaction.isRecurring : !transaction.isRecurring
+                recurringFilter === "recurring" ? transaction.isRecurring : !transaction.isRecurring
             ) ;
         }
         // type filter
@@ -119,9 +143,23 @@ const TransactionsTable = ({transactions}) => {
         return result ;
     }, [transactions, searchTerm , typeFilter , recurringFilter , sortConfig]) ;
 
+    // Pagination logic
+    const totalPages = Math.ceil(filteredAndSortedTransactions.length / itemsPerPage) ;
+    const startIndex = (currentPage - 1) * itemsPerPage ;
+    const endIndex = startIndex + itemsPerPage ;
+    const paginatedTransactions = filteredAndSortedTransactions.slice(startIndex, endIndex) ;
+
+    // Reset to page 1 if current page exceeds total pages
+    React.useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(1) ;
+        }
+    }, [totalPages, currentPage]) ;
+
     return (
         <TooltipProvider>
         <div className='space-y-4'>
+            {deleteLoading && <BarLoader width={"100%"} color="#9333ea" loading={deleteLoading} />}
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
@@ -226,7 +264,7 @@ const TransactionsTable = ({transactions}) => {
                             </TableCell>
                         </TableRow>
                     ) : (
-                        filteredAndSortedTransactions.map((transaction) => (    
+                        paginatedTransactions.map((transaction) => (    
                         <TableRow key={transaction.id}>
                         <TableCell className="font-medium"><Checkbox onCheckedChange={() => handleSelect(transaction.id)}
                         checked={selectIds.includes(transaction.id)} /></TableCell>
@@ -298,6 +336,40 @@ const TransactionsTable = ({transactions}) => {
                 </TableBody>
                 </Table>
             </div>
+
+            {/* Pagination Controls */}
+            {filteredAndSortedTransactions.length > 0 && (
+                <div className="flex items-center justify-between mt-4">
+                    <p className="text-sm text-muted-foreground">
+                        Showing {startIndex + 1} to {Math.min(endIndex, filteredAndSortedTransactions.length)} of {filteredAndSortedTransactions.length} transactions
+                    </p>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                            Previous
+                        </Button>
+                        <div className="flex items-center gap-1">
+                            <span className="text-sm font-medium">
+                                Page {currentPage} of {totalPages}
+                            </span>
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
         </TooltipProvider>
     );
