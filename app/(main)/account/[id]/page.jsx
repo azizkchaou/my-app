@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { parse } from "date-fns";
 import TransactionsTable from "../_components/transactions-table";
 import { BarLoader } from "react-spinners";
+import { AccountChart } from "../_components/account-chart";
+
+
 
 const AccountPage = async ({params}) => {
     const { id } = await params;
@@ -12,6 +15,7 @@ const AccountPage = async ({params}) => {
         notFound() ;
     }
     const { transactions , ...account } = accountData ;
+    
     return (
         <div className="space-y-8 px-5">
             <div  className="flex gap-4 items-end justify-between">
@@ -26,8 +30,15 @@ const AccountPage = async ({params}) => {
             </div>
         </div>
             {/* chart section  */}
+            <Suspense
+                fallback={<BarLoader className="mt-4" width={"100%"} color="#9333ea" />}
+            >
+                <AccountChart transactions={transactions} />
+            </Suspense>
             {/* transactions table  */}
-            <Suspense fallback={<BarLoader className="mt-4" width={"100%"} color="#9333ea" />} >
+            <Suspense
+                fallback={<BarLoader className="mt-4" width={"100%"} color="#9333ea" />}
+            >
                 <TransactionsTable transactions={transactions} />
             </Suspense>
         </div>
