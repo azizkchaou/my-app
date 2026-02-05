@@ -1,13 +1,13 @@
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { categoryColors } from "@/data/categories";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
-import { ChevronUp, Clock, RefreshCw , ChevronDown } from 'lucide-react';
+import { ChevronUp, Clock, RefreshCw , ChevronDown, X } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
@@ -16,7 +16,10 @@ import { useState } from 'react';
 import useFetch from '@/hooks/use-fetch';
 import { set } from 'mongoose';
 import { se } from 'date-fns/locale';
-
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Trash } from 'lucide-react';
 
 
 const RECURRING_INTERVALS = {
@@ -26,15 +29,15 @@ const RECURRING_INTERVALS = {
     YEARLY : "Yearly" ,
 };
 
-
-
 const TransactionsTable = ({transactions}) => {
-    const filteredAndSortedTransactions = transactions ;
     const router = useRouter() ;
     const [selectIds , setSelectIds ] = useState([]) ;
     const [sortConfig , setSortConfig ] = useState({field : "date" , 
         direction : "desc", });
     
+    const [searchTerm,  setSearchTerm ] = useState("") ;
+    const [typeFilter , setTypeFilter] = useState("");
+    const [recurringFilter , setRecurringFilter] = useState("")
 
     const handleSort = (field) => {
         setSortConfig((current) => ({
@@ -62,11 +65,134 @@ const TransactionsTable = ({transactions}) => {
         }   
     };
 
+    const handleBulkDelete = () => {
+        deleteFn(selectIds) ;
+    };
+
+    const handleClearFilters = () => {
+        setSearchTerm("") ;
+        setTypeFilter("") ;
+        setRecurringFilter("") ;
+        setSelectIds([]) ;
+    }
+    
+    const filteredAndSortedTransactions = useMemo(() => {
+        let result = [...transactions]    ;
+
+        // applying the search filter 
+        if (searchTerm) {
+            result = result.filter((transaction) =>
+                transaction.description.toLowerCase().includes(searchTerm.toLowerCase())
+            ) ;
+        }
+
+        // recurring filter
+        if (recurringFilter) {
+            result = result.filter((transaction) => 
+                recurringFilter === "RECURRING" ? transaction.isRecurring : !transaction.isRecurring
+            ) ;
+        }
+        // type filter
+        if (typeFilter) {
+            result = result.filter((transaction) => transaction.type === typeFilter) ;
+        }
+        // sorting
+        result.sort((a, b) => {
+            let comparison = 0 ;
+            switch (sortConfig.field) {
+                case "date" :
+                    comparison = new Date(a.date) - new Date(b.date) ;
+                    break ;
+                case "amount" :
+                    comparison = a.amount - b.amount ;
+                    break ;
+                case "category" :
+                    comparison = a.category.localeCompare(b.category) ;
+                    break ;
+                default :
+                    comparison = 0 ;
+                }
+        
+            return sortConfig.direction === "asc" ? comparison : -comparison ;
+        }) ;
+
+        return result ;
+    }, [transactions, searchTerm , typeFilter , recurringFilter , sortConfig]) ;
 
     return (
         <TooltipProvider>
         <div className='space-y-4'>
-            {/*Filters */}
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    placeholder="Search transactions..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    
+                    }}
+                    className="pl-8"
+                />
+                </div>
+                <div className="flex gap-2">
+                <Select
+                    value={typeFilter}
+                    onValueChange={(value) => {
+                    setTypeFilter(value);
+                    }}
+                >
+                    <SelectTrigger className="w-[130px]">
+                    <SelectValue placeholder="All Types" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    <SelectItem value="INCOME">Income</SelectItem>
+                    <SelectItem value="EXPENSE">Expense</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <Select
+                    value={recurringFilter}
+                    onValueChange={(value) => {
+                    setRecurringFilter(value);
+                    }}
+                >
+                    <SelectTrigger className="w-[130px]">
+                    <SelectValue placeholder="All Transactions" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    <SelectItem value="recurring">Recurring Only</SelectItem>
+                    <SelectItem value="non-recurring">Non-recurring Only</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                {/* Bulk Actions */}
+                {selectIds.length > 0 && (
+                    <div className="flex items-center gap-2">
+                    <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleBulkDelete}
+                    >
+                        <Trash className="h-4 w-4 mr-2" />
+                        Delete Selected ({selectIds.length})
+                    </Button>
+                    </div>
+                )}
+
+                {(searchTerm || typeFilter || recurringFilter) && (
+                    <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleClearFilters}
+                    title="Clear filters"
+                    >
+                    <X className="h-4 w-5" />
+                    </Button>
+                )}
+                </div>
+            </div>
 
             {/* Transactions */}
             <div className="rounded-md border">
