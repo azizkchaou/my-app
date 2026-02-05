@@ -19,6 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { ReceiptScanner } from "./recipt-scanner";
 
 
 const AddTransactionForm = ({ accounts , categories }) => {
@@ -64,10 +65,22 @@ const AddTransactionForm = ({ accounts , categories }) => {
         }
     }, [transactionResult , transactionLoading]) ;
 
-     
+    const handleScanComplete = (scannedData) => {
+        if (scannedData) {
+            setValue("amount", scannedData.amount.toString());
+            setValue("date", new Date(scannedData.date));
+            if (scannedData.description) {
+                setValue("description", scannedData.description);
+            }
+            if (scannedData.category) {
+                setValue("category", scannedData.category);
+            }
+        }
+    };
 
-    return <form onSubmit={handleSubmit(onSubmit)}>
-        {/* AI Recipt scanner */}
+    return <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-2xl">
+        {/* AI Receipt scanner */}
+        <ReceiptScanner onScanComplete={handleScanComplete} />
         {/* Type */}
         <div className="space-y-2">
             <label className="text-sm font-medium">Type</label>
@@ -241,17 +254,17 @@ const AddTransactionForm = ({ accounts , categories }) => {
         )}
 
         {/* Actions */}
-        <div className="flex gap-4">
+        <div className="flex gap-3 justify-end pt-6 border-t">
             <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="px-8"
             onClick={() => router.back()}
             >
             Cancel
             </Button>
-            <Button type="submit" className="w-full" disabled={transactionLoading}>
-                create transaction
+            <Button type="submit" className="px-8" disabled={transactionLoading}>
+                {transactionLoading ? "Creating..." : "Create Transaction"}
             </Button>
         </div>
 
