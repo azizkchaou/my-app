@@ -44,6 +44,17 @@ const PREVIEW_DATA = {
       totalExpenses: 3400,
     },
   },
+  billReminder: {
+    userName: "John Doe",
+    type: "bill-reminder",
+    data: {
+      billName: "Electricity Bill",
+      amount: 120.5,
+      dueDate: "2026-02-10",
+      daysUntilDue: 4,
+      urgency: "soon",
+    },
+  },
 };
 
 export default function EmailTemplate({
@@ -149,6 +160,63 @@ export default function EmailTemplate({
                 </Text>
               </div>
             </Section>
+          </Container>
+        </Body>
+      </Html>
+    );
+  }
+
+  if (type === "bill-reminder") {
+    const isOverdue = data?.daysUntilDue < 0;
+    const urgencyTitle = isOverdue
+      ? "Bill Overdue"
+      : data?.daysUntilDue <= 1
+      ? "Bill Due Tomorrow"
+      : data?.daysUntilDue <= 3
+      ? "Bill Due Soon"
+      : "Upcoming Bill";
+
+    return (
+      <Html>
+        <Head />
+        <Preview>{urgencyTitle}</Preview>
+        <Body style={styles.body}>
+          <Container style={styles.container}>
+            <Heading style={styles.title}>{urgencyTitle}</Heading>
+            <Text style={styles.text}>Hello {userName},</Text>
+            <Text style={styles.text}>
+              {isOverdue
+                ? "Your bill is overdue. Please pay it as soon as possible to avoid penalties."
+                : "This is a reminder about your upcoming bill."}
+            </Text>
+
+            <Section style={styles.statsContainer}>
+              <div style={styles.stat}>
+                <Text style={styles.text}>Bill</Text>
+                <Text style={styles.heading}>{data?.billName}</Text>
+              </div>
+              <div style={styles.stat}>
+                <Text style={styles.text}>Amount Due</Text>
+                <Text style={styles.heading}>${data?.amount}</Text>
+              </div>
+              <div style={styles.stat}>
+                <Text style={styles.text}>Due Date</Text>
+                <Text style={styles.heading}>{data?.dueDate}</Text>
+              </div>
+              <div style={styles.stat}>
+                <Text style={styles.text}>Status</Text>
+                <Text style={styles.heading}>
+                  {isOverdue
+                    ? `Overdue by ${Math.abs(data?.daysUntilDue)} days`
+                    : `Due in ${data?.daysUntilDue} days`}
+                </Text>
+              </div>
+            </Section>
+
+            <Text style={styles.footer}>
+              Thank you for using Welth. Stay on top of your bills to keep your
+              finances healthy!
+            </Text>
           </Container>
         </Body>
       </Html>
