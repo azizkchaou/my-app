@@ -77,18 +77,20 @@ export function DashboardOverview({ accounts, transactions }) {
   );
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-6 lg:grid-cols-2">
       {/* Recent Transactions Card */}
-      <Card>
+      <Card className="border bg-background/60 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-base font-normal">
-            Recent Transactions
-          </CardTitle>
-          <Select
-            value={selectedAccountId}
-            onValueChange={setSelectedAccountId}
-          >
-            <SelectTrigger className="w-[140px]">
+          <div className="space-y-1">
+            <CardTitle className="text-base font-semibold">
+              Recent Transactions
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Last activity for the selected account
+            </p>
+          </div>
+          <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+            <SelectTrigger className="h-8 w-[160px] bg-background">
               <SelectValue placeholder="Select account" />
             </SelectTrigger>
             <SelectContent>
@@ -103,27 +105,30 @@ export function DashboardOverview({ accounts, transactions }) {
         <CardContent>
           <div className="space-y-4">
             {recentTransactions.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4">
+              <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
                 No recent transactions
-              </p>
+              </div>
             ) : (
-              recentTransactions.map((transaction) => (
+              recentTransactions.map((transaction, index) => (
                 <div
                   key={transaction.id}
-                  className="flex items-center justify-between"
+                  className={cn(
+                    "flex items-center justify-between rounded-lg p-3 transition-colors",
+                    index % 2 === 0 ? "bg-muted/40" : "bg-transparent"
+                  )}
                 >
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none">
                       {transaction.description || "Untitled Transaction"}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {format(new Date(transaction.date), "PP")}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <div
                       className={cn(
-                        "flex items-center",
+                        "flex items-center text-sm font-semibold",
                         transaction.type === "EXPENSE"
                           ? "text-red-500"
                           : "text-green-500"
@@ -145,26 +150,29 @@ export function DashboardOverview({ accounts, transactions }) {
       </Card>
 
       {/* Expense Breakdown Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-normal">
+      <Card className="border bg-background/60 shadow-sm">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-base font-semibold">
             Monthly Expense Breakdown
           </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Category distribution for this month
+          </p>
         </CardHeader>
         <CardContent className="p-0 pb-5">
           {pieChartData.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">
+            <div className="mx-6 mb-6 rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
               No expenses this month
-            </p>
+            </div>
           ) : (
-            <div className="h-[300px]">
+            <div className="h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={pieChartData}
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
+                    outerRadius={90}
                     fill="#8884d8"
                     dataKey="value"
                     label={({ name, value }) => `${name}: $${value.toFixed(2)}`}

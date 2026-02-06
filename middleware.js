@@ -1,5 +1,5 @@
 import { auth, clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import arcjet, { detectBot } from "@arcjet/next";
+import arcjet, { createMiddleware, detectBot, shield } from "@arcjet/next";
 const isProtectedRoute = createRouteMatcher([
     "/dashboard(.*)",
     "/account(.*)",
