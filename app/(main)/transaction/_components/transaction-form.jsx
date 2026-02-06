@@ -17,16 +17,34 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { ReceiptScanner } from "./recipt-scanner";
+import { Loader2 } from "lucide-react";
+import { updateTransaction } from "@/actions/transaction";
 
 
-const AddTransactionForm = ({ accounts , categories }) => {
+const AddTransactionForm = ({ accounts , categories , editMode= false , initialData = null }) => {
     const router = useRouter() ;
+    const searchparams = useSearchParams() ;
+
+
      const { register, setValue ,handleSubmit, formState: { errors } , watch , getValues, reset   } = useForm({
         resolver: zodResolver(transactionSchema),
-        defaultValues: {
+        defaultValues: 
+            editMode && initialData ? {
+                type: initialData.type,
+            amount: initialData.amount.toString(),
+            description: initialData.description,
+            accountId: initialData.accountId,
+            category: initialData.category,
+            date: new Date(initialData.date),
+            isRecurring: initialData.isRecurring,
+            ...(initialData.recurringInterval && {
+              recurringInterval: initialData.recurringInterval,
+            }),
+            } :
+        {
             type : "EXPENSE",
             amount : "" ,
             date : new Date(),
@@ -41,7 +59,7 @@ const AddTransactionForm = ({ accounts , categories }) => {
         loading : transactionLoading,
         data : transactionResult ,
         fn : createTransactionFn ,
-    } = useFetch(createTransaction) ;
+    } = useFetch(editMode ? updateTransaction : createTransaction) ;
     
     const type = watch("type") ;
     const isRecurring = watch("isRecurring") ;
@@ -54,16 +72,22 @@ const AddTransactionForm = ({ accounts , categories }) => {
             ...data,    
             amount : parseFloat(data.amount) ,
         }
-        await createTransactionFn(formData) ;
+        if (editMode && initialData) {
+            await createTransactionFn(initialData.id , formData) ;
+        }
+        else {
+            await createTransactionFn(formData) ;
+        }
+        
     }
 
     useEffect(() => {
         if (transactionResult?.success && !transactionLoading) {
-            toast.success("Transaction created successfully") ;
+            toast.success(editMode ? "Transaction updated successfully" : "Transaction created successfully") ;
             reset() ;
             router.push(`/account/${transactionResult.data.accountId}`)
         }
-    }, [transactionResult , transactionLoading]) ;
+    }, [transactionResult , transactionLoading , editMode]) ;
 
     const handleScanComplete = (scannedData) => {
         if (scannedData) {
@@ -80,7 +104,7 @@ const AddTransactionForm = ({ accounts , categories }) => {
 
     return <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-2xl">
         {/* AI Receipt scanner */}
-        <ReceiptScanner onScanComplete={handleScanComplete} />
+        {!editMode && <ReceiptScanner onScanComplete={handleScanComplete} />}
         {/* Type */}
         <div className="space-y-2">
             <label className="text-sm font-medium">Type</label>
@@ -264,7 +288,16 @@ const AddTransactionForm = ({ accounts , categories }) => {
             Cancel
             </Button>
             <Button type="submit" className="px-8" disabled={transactionLoading}>
-                {transactionLoading ? "Creating..." : "Create Transaction"}
+                {transactionLoading ? (
+                    <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {editMode ? "Updating..." : "Creating..."}
+                    </>
+                ) : editMode ? (
+                    "Update Transaction"
+                ) : (
+                    "Create Transaction"
+                )}
             </Button>
         </div>
 
