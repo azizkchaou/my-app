@@ -76,6 +76,11 @@ export function DashboardOverview({ accounts, transactions }) {
     })
   );
 
+  const totalExpenses = pieChartData.reduce(
+    (sum, entry) => sum + entry.value,
+    0
+  );
+
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       {/* Recent Transactions Card */}
@@ -175,7 +180,6 @@ export function DashboardOverview({ accounts, transactions }) {
                     outerRadius={90}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({ name, value }) => `${name}: $${value.toFixed(2)}`}
                   >
                     {pieChartData.map((entry, index) => (
                       <Cell
@@ -185,7 +189,12 @@ export function DashboardOverview({ accounts, transactions }) {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value) => `$${value.toFixed(2)}`}
+                    formatter={(value, name) => {
+                      const percent = totalExpenses
+                        ? (Number(value) / totalExpenses) * 100
+                        : 0;
+                      return [`${percent.toFixed(1)}%`, name];
+                    }}
                     contentStyle={{
                       backgroundColor: "hsl(var(--popover))",
                       border: "1px solid hsl(var(--border))",

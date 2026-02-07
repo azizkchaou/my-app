@@ -3,7 +3,7 @@ import {Button} from "@/components/ui/button";
 import Link from "next/link";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
-import { LayoutDashboard, Receipt, CheckSquare, Landmark } from "lucide-react";
+import { LayoutDashboard, Receipt, CheckSquare, Landmark, TrendingUp } from "lucide-react";
 import { PenBox } from "lucide-react";
 import { checkUser } from "@/lib/checkUser";
 
@@ -64,6 +64,12 @@ const Header = async () => {
               <Button variant="outline">
                 <Landmark size={18} />
                 <span className="hidden md:inline"> Loans </span>
+              </Button>
+            </Link>
+            <Link href="/invest" className="text-gray-600 hover:text-blue-600 flex items-center gap-2">
+              <Button variant="outline">
+                <TrendingUp size={18} />
+                <span className="hidden md:inline"> Invest </span>
               </Button>
             </Link>
             <Link href={"/transaction/create"}>

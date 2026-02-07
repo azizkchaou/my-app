@@ -16,13 +16,24 @@
 # next.js
 /.next/
 /out/
+/.turbo/
+/.swc/
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
 *.pem
+.eslintcache
+.stylelintcache
+.lintstagedrc.cache
+*.log
+logs/
+tmp/
+.tmp/
+.cache/
 
 # debug
 npm-debug.log*
@@ -41,3 +52,32 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
+
+# python
+.venv*/
+.ipynb_checkpoints/
+
+# ml artifacts
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.onnx
+
+# local datasets/results
+*.csv
+eval_results/
+reports/
+results/
+
+# prisma
+prisma/.env
+prisma/migrations/**/migration_lock.toml
+
+# IDEs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
