@@ -1,47 +1,27 @@
-# TuniFia — AI-Powered Fintech Platform
+# TuniFia
 
-TuniFia is a Next.js fintech application for personal finance management, smart automation, and AI-assisted insights. It combines core money tracking with modern workflows like bill and check management, investment dashboards, and explainable loan readiness.
+TuniFia is a Next.js fintech platform for personal finance management with AI-assisted workflows. It combines everyday money tracking with bill and check management, investment views, and explainable loan readiness insights.
 
-## Core Features
+## Highlights
 
-### Accounts & Transactions
-- Multi-account support with default account handling
-- Transaction creation and updates with recurring scheduling
-- Category-based analytics
-
-### Bills
-- Create, track, and pay bills
-- AI bill scanning (image → field extraction → review & confirm)
-- Automated reminders via Inngest + Resend
-
-### Checks
-- Issued and received checks tracking
-- Pending/cleared/bounced statuses
-- Risk monitoring for insufficient funds with proactive alerts
-- AI check scanning with confidence indicators and review step
-
-### Loan Readiness (RAG)
-- Embeddings from Sentence Transformers (no credit scores)
-- Similarity search over historical cases (Qdrant)
-- OpenRouter LLM produces qualitative readiness explanation
-- Transparent, non-judgmental guidance + disclaimer
-
-### Investments
-- Crypto market data, watchlists, and analytics
-- Live data integrations
+- Multi-account transactions with recurring scheduling and category analytics
+- Bills management with AI-assisted scan and confirmation
+- Check tracking with risk monitoring and scan review flow
+- Loan readiness explanations using retrieval-augmented insights
+- Investment dashboards and market data views
 
 ## Tech Stack
 
-- **Frontend**: Next.js App Router, React, Tailwind
-- **Auth**: Clerk
-- **Database**: Supabase Postgres + Prisma
-- **Vector Store**: Qdrant
-- **AI/LLM**: OpenRouter (reasoning/explanations only)
-- **Embeddings**: Sentence Transformers (all-MiniLM-L6-v2)
-- **Jobs**: Inngest
-- **Email**: Resend
+- Next.js App Router, React, Tailwind
+- Clerk for authentication
+- Supabase Postgres + Prisma
+- Qdrant for vector search
+- OpenRouter for LLM explanations
+- Sentence Transformers for embeddings
+- Inngest for background jobs
+- Resend for email
 
-## Local Development
+## Getting Started
 
 Install dependencies:
 
@@ -49,7 +29,7 @@ Install dependencies:
 npm install
 ```
 
-Run the app:
+Run the dev server:
 
 ```bash
 npm run dev
@@ -57,7 +37,7 @@ npm run dev
 
 ## Environment Variables
 
-Create a `.env` file with the following:
+Create a `.env` file at the project root:
 
 ```
 # Clerk
@@ -88,15 +68,15 @@ SUPABASE_SERVICE_ROLE_KEY=
 SUPABASE_CHECKS_BUCKET=check-scans
 ```
 
-## Data Seeding — Loan Readiness
+## Loan Readiness Data Seeding
 
-Place the dataset at:
+Add the dataset:
 
 ```
 data/loan_approval_dataset.csv
 ```
 
-Build the combined profile dataset:
+Build profiles:
 
 ```bash
 node scripts/loans/build-loan-profiles.mjs
@@ -108,20 +88,19 @@ Seed embeddings into Qdrant:
 node scripts/loans/seed-loan-embeddings.mjs
 ```
 
-## Important Notes
-
-- The loan readiness feature **does not use CIBIL or credit scores**.
-- The LLM provides **qualitative** readiness only (no numeric scoring).
-- AI scanning always requires user review and confirmation.
-- Check scans are uploaded temporarily and removed after processing.
-
 ## Scripts
 
-- `npm run dev` — start dev server
-- `npm run build` — production build
-- `npm run start` — start production server
-- `npm run inngest` — run Inngest dev server
+- `npm run dev` - start dev server
+- `npm run build` - production build
+- `npm run start` - start production server
+- `npm run inngest` - run Inngest dev server
+
+## Notes
+
+- Loan readiness is qualitative and does not use credit scores.
+- AI scan flows always require user review and confirmation.
+- Uploaded scan files are temporary and cleaned after processing.
 
 ## Disclaimer
 
-Loan readiness results are based on similarity to historical cases and are for informational purposes only. They do not guarantee loan approval.
+Loan readiness results are informational and do not guarantee approval.
