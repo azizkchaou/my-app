@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# TuniFia — AI-Powered Fintech Platform
 
-## Getting Started
+TuniFia is a Next.js fintech application for personal finance management, smart automation, and AI-assisted insights. It combines core money tracking with modern workflows like bill and check management, investment dashboards, and explainable loan readiness.
 
-First, run the development server:
+## Core Features
+
+### Accounts & Transactions
+- Multi-account support with default account handling
+- Transaction creation and updates with recurring scheduling
+- Category-based analytics
+
+### Bills
+- Create, track, and pay bills
+- AI bill scanning (image → field extraction → review & confirm)
+- Automated reminders via Inngest + Resend
+
+### Checks
+- Issued and received checks tracking
+- Pending/cleared/bounced statuses
+- Risk monitoring for insufficient funds with proactive alerts
+- AI check scanning with confidence indicators and review step
+
+### Loan Readiness (RAG)
+- Embeddings from Sentence Transformers (no credit scores)
+- Similarity search over historical cases (Qdrant)
+- OpenRouter LLM produces qualitative readiness explanation
+- Transparent, non-judgmental guidance + disclaimer
+
+### Investments
+- Crypto market data, watchlists, and analytics
+- Live data integrations
+
+## Tech Stack
+
+- **Frontend**: Next.js App Router, React, Tailwind
+- **Auth**: Clerk
+- **Database**: Supabase Postgres + Prisma
+- **Vector Store**: Qdrant
+- **AI/LLM**: OpenRouter (reasoning/explanations only)
+- **Embeddings**: Sentence Transformers (all-MiniLM-L6-v2)
+- **Jobs**: Inngest
+- **Email**: Resend
+
+## Local Development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Variables
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Create a `.env` file with the following:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+# Clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=
 
-## Learn More
+# Database (Supabase Postgres)
+DATABASE_URL=
+DIRECT_URL=
 
-To learn more about Next.js, take a look at the following resources:
+# AI / LLM
+OPENROUTER_API_KEY=
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Email
+RESEND_API_KEY=
+RESEND_FROM=
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Qdrant
+QDRANT_URL=
+QDRANT_API_KEY=
+QDRANT_COLLECTION=loan_embeddings
 
-## Deploy on Vercel
+# Supabase Storage (for check scans)
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_CHECKS_BUCKET=check-scans
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Data Seeding — Loan Readiness
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Place the dataset at:
+
+```
+data/loan_approval_dataset.csv
+```
+
+Build the combined profile dataset:
+
+```bash
+node scripts/loans/build-loan-profiles.mjs
+```
+
+Seed embeddings into Qdrant:
+
+```bash
+node scripts/loans/seed-loan-embeddings.mjs
+```
+
+## Important Notes
+
+- The loan readiness feature **does not use CIBIL or credit scores**.
+- The LLM provides **qualitative** readiness only (no numeric scoring).
+- AI scanning always requires user review and confirmation.
+- Check scans are uploaded temporarily and removed after processing.
+
+## Scripts
+
+- `npm run dev` — start dev server
+- `npm run build` — production build
+- `npm run start` — start production server
+- `npm run inngest` — run Inngest dev server
+
+## Disclaimer
+
+Loan readiness results are based on similarity to historical cases and are for informational purposes only. They do not guarantee loan approval.
