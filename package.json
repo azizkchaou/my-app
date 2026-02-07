@@ -9,7 +9,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall" : "prisma generate"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@arcjet/next": "^1.1.0",
@@ -19,6 +19,7 @@
     "@prisma/client": "^6.19.2",
     "@react-email/components": "^1.0.7",
     "@react-email/render": "^2.0.4",
+    "@supabase/supabase-js": "^2.95.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -44,6 +45,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/bunyan": "^1.8.11",
     "@types/node": "^25.2.0",
+    "@types/react": "19.2.13",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",

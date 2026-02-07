@@ -4,6 +4,7 @@ import { db } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { success } from "zod";
 import { aj } from "@/lib/arcjet";
+import { evaluateIssuedChecksRisk } from "@/lib/checks-risk";
 import { request } from "@arcjet/next";
 
 const serializeAmount = (obj) => ({
@@ -71,6 +72,7 @@ export async function createTransaction(data) {
             return newTransaction;
         });
 
+        await evaluateIssuedChecksRisk(user.id);
         revalidatePath("/dashboard");
         revalidatePath(`/account/${data.accountId}`);
         return { success: true, data: serializeAmount(transaction) };
@@ -297,6 +299,7 @@ export async function updateTransaction(id, data) {
       return updated;
     });
 
+    await evaluateIssuedChecksRisk(user.id);
     revalidatePath("/dashboard");
     revalidatePath(`/account/${data.accountId}`);
 

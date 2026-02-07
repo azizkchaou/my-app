@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { evaluateIssuedChecksRisk } from "@/lib/checks-risk";
 
 const serializeBill = (bill) => ({
   ...bill,
@@ -149,6 +150,7 @@ export async function payBill({ billId }) {
       return { transaction, bill: updatedBill };
     });
 
+    await evaluateIssuedChecksRisk(user.id);
     revalidatePath("/bills");
     revalidatePath("/dashboard");
     revalidatePath(`/account/${bill.accountId}`);

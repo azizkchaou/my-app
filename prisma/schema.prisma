@@ -24,6 +24,7 @@ model User {
   accounts      Account[]
   budgets       Budget[]
   bills         Bill[]
+  checks        Check[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
@@ -65,6 +66,7 @@ model Transaction {
   accountId        String
   account          Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
   linkedBill       Bill?             @relation("BillTransaction")
+  linkedCheck      Check?            @relation("CheckTransaction")
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
@@ -113,6 +115,29 @@ model Bill {
   @@map("bills")
 }
 
+model Check {
+  id                  String      @id @default(cuid())
+  userId              String
+  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type                CheckType
+  payeeOrPayer        String
+  amount              Decimal
+  issueDate           DateTime
+  depositDate         DateTime
+  bankName            String?
+  checkNumber         String?
+  status              CheckStatus @default(PENDING)
+  linkedTransactionId String?     @unique
+  linkedTransaction   Transaction? @relation("CheckTransaction", fields: [linkedTransactionId], references: [id], onDelete: SetNull)
+  alerted             Boolean     @default(false)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([depositDate])
+  @@map("checks")
+}
+
 enum TransactionType {
   INCOME
   EXPENSE
@@ -151,4 +176,15 @@ enum BillStatus {
 enum BillSource {
   MANUAL
   AI_SCAN
+}
+
+enum CheckType {
+  ISSUED
+  RECEIVED
+}
+
+enum CheckStatus {
+  PENDING
+  CLEARED
+  BOUNCED
 }

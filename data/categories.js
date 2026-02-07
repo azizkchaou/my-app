@@ -153,6 +153,14 @@ export const defaultCategories = [
     subcategories: ["Bank Fees", "Late Fees", "Service Charges"],
   },
   {
+    id: "checks",
+    name: "Checks",
+    type: "EXPENSE",
+    color: "#f97316", // orange-500
+    icon: "BadgeCheck",
+    subcategories: ["Issued Checks", "Bank Check Fees"],
+  },
+  {
     id: "other-expense",
     name: "Other Expenses",
     type: "EXPENSE",

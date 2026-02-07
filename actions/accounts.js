@@ -2,6 +2,7 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { evaluateIssuedChecksRisk } from "@/lib/checks-risk";
 import { success } from "zod";
 
 
@@ -126,6 +127,7 @@ export async function bulkDeleteTransactions(transactionIds) {
       }
     });
 
+    await evaluateIssuedChecksRisk(user.id);
     revalidatePath("/dashboard");
     revalidatePath("/account/[id]");
 

@@ -55,6 +55,16 @@ const PREVIEW_DATA = {
       urgency: "soon",
     },
   },
+  checkRiskAlert: {
+    userName: "John Doe",
+    type: "check-risk-alert",
+    data: {
+      amount: 450.0,
+      depositDate: "2026-02-12",
+      balance: 320.0,
+      payeeOrPayer: "Acme Supplies",
+    },
+  },
 };
 
 export default function EmailTemplate({
@@ -216,6 +226,47 @@ export default function EmailTemplate({
             <Text style={styles.footer}>
               Thank you for using Welth. Stay on top of your bills to keep your
               finances healthy!
+            </Text>
+          </Container>
+        </Body>
+      </Html>
+    );
+  }
+
+  if (type === "check-risk-alert") {
+    return (
+      <Html>
+        <Head />
+        <Preview>Check Risk Alert</Preview>
+        <Body style={styles.body}>
+          <Container style={styles.container}>
+            <Heading style={styles.title}>Check Risk Alert</Heading>
+            <Text style={styles.text}>Hello {userName},</Text>
+            <Text style={styles.text}>
+              One of your issued checks may bounce due to insufficient funds.
+            </Text>
+
+            <Section style={styles.statsContainer}>
+              <div style={styles.stat}>
+                <Text style={styles.text}>Payee</Text>
+                <Text style={styles.heading}>{data?.payeeOrPayer}</Text>
+              </div>
+              <div style={styles.stat}>
+                <Text style={styles.text}>Check Amount</Text>
+                <Text style={styles.heading}>${data?.amount}</Text>
+              </div>
+              <div style={styles.stat}>
+                <Text style={styles.text}>Deposit Date</Text>
+                <Text style={styles.heading}>{data?.depositDate}</Text>
+              </div>
+              <div style={styles.stat}>
+                <Text style={styles.text}>Current Balance</Text>
+                <Text style={styles.heading}>${data?.balance}</Text>
+              </div>
+            </Section>
+
+            <Text style={styles.footer}>
+              Please ensure you have sufficient funds before the deposit date to avoid a bounced check.
             </Text>
           </Container>
         </Body>
