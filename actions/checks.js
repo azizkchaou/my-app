@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { evaluateIssuedChecksRisk } from "@/lib/checks-risk";
 import { sendEmail } from "@/actions/send-email";
 import EmailTemplate from "@/emails/template";
+import { uploadScanImage } from "@/lib/scan-storage";
 
 const toNumber = (value) =>
   value && typeof value.toNumber === "function" ? value.toNumber() : Number(value || 0);
@@ -110,6 +111,8 @@ export async function createCheck(data) {
 
 export async function scanCheck(file) {
   try {
+    const user = await getAuthenticatedUser();
+
     if (!file) {
       throw new Error("No file provided");
     }
@@ -119,8 +122,12 @@ export async function scanCheck(file) {
       throw new Error("Missing OPENROUTER_API_KEY in environment.");
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const base64String = Buffer.from(arrayBuffer).toString("base64");
+    const { signedUrl, cleanup } = await uploadScanImage({
+      userId: user.id,
+      file,
+      bucket: process.env.SUPABASE_CHECKS_BUCKET || "check-scans",
+      prefix: "checks",
+    });
 
     const prompt = `
         You are extracting data from a bank check image.
@@ -155,32 +162,37 @@ export async function scanCheck(file) {
         If you cannot extract a field, use null (or empty string for payeeOrPayer).
       `;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: prompt },
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:${file.type || "image/jpeg"};base64,${base64String}`,
+    let response;
+    try {
+      response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "openai/gpt-4o-mini",
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: prompt },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: signedUrl,
+                  },
                 },
-              },
-            ],
-          },
-        ],
-        temperature: 0.2,
-        max_tokens: 500,
-      }),
-    });
+              ],
+            },
+          ],
+          temperature: 0.2,
+          max_tokens: 500,
+        }),
+      });
+    } finally {
+      await cleanup();
+    }
 
     if (!response.ok) {
       const errorData = await response.json();
