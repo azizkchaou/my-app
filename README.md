@@ -9,6 +9,8 @@ TuniFia is a Next.js fintech platform for personal finance management with AI-as
 - Check tracking with risk monitoring and scan review flow
 - Loan readiness explanations using retrieval-augmented insights
 - Investment dashboards and market data views
+- new market investment for small buisnesses and startups
+- Investment for the energy
 
 ## Tech Stack
 
@@ -20,6 +22,8 @@ TuniFia is a Next.js fintech platform for personal finance management with AI-as
 - Sentence Transformers for embeddings
 - Inngest for background jobs
 - Resend for email
+- LangGraph for multi Ai agent
+- ML & DL models for predection
 
 ## Getting Started
 
